@@ -573,7 +573,7 @@ def query_news(session_token, skip, limit, params):
 
 def read_news(session_token, news_id, is_mark):
     """
-    标记已读
+    标记/已读
     :param session_token:
     :param news_id:
     :param is_mark:
