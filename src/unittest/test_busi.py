@@ -168,3 +168,9 @@ class TestBusi(TestCase):
         todo_list = query.find()
         for todo in todo_list:
             print(todo.dump())
+
+    def test_read_news(self):
+        user = leancloud.User().become(session_token)
+        ret = cloudfunc.run('readNews', isMark=1, newsId=1)
+        print(ret)
+        assert (type(ret) == dict)

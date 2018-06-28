@@ -7,7 +7,7 @@
 # @Software: PyCharm
 
 from flask import jsonify
-from sqlalchemy import exists, not_, and_
+from sqlalchemy import exists, not_, and_, desc
 
 from src.app.group.modes import *
 from src.app.main import db
@@ -339,9 +339,18 @@ def query_notes(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Notes).filter(Notes.belongGroupId == user.defaultGroupId).filter(
-        Notes.isDisable == 0).limit(limit).offset(
-        skip).all()
+    query = db.session.query(Notes).filter(Notes.isDisable == 0)
+    if params is None:
+        params = {}
+    if "belongGroupId" in params:
+        query = query.filter(News.belongGroupId == params["belongGroupId"])
+    if "spaceId" in params:
+        query = query.filter(News.spaceId == params["spaceId"])
+    if "positionId" in params:
+        query = query.filter(News.positionId == params["positionId"])
+    if "goodsId" in params:
+        query = query.filter(News.goodsId == params["goodsId"])
+    query = query.order_by(desc(Notes.id)).limit(limit).offset(skip).all()
     results = []
     for data in query:
         results.append({"objectId": data.id,
@@ -407,7 +416,7 @@ def create_marks(session_token, is_public, position_id, goods_id):
     marks.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     db.session.add(marks)
     db.session.commit()
-    if goods_id != -1 or goods_id is not None:
+    if goods_id != -1 and goods_id is not None:
         save_news(user, title="", content="", type=2, space_id=position.spaceId, position_id=position_id,
                   goods_id=goods_id)
     return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目创建成功"}})
@@ -426,9 +435,18 @@ def query_marks(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Marks).filter(Goods.belongGroupId == user.defaultGroupId).filter(
-        Marks.isDisable == 0).limit(limit).offset(
-        skip).all()
+    query = db.session.query(Marks).filter(Marks.isDisable == 0)
+    if params is None:
+        params = {}
+    if "belongGroupId" in params:
+        query = query.filter(News.belongGroupId == params["belongGroupId"])
+    if "spaceId" in params:
+        query = query.filter(News.spaceId == params["spaceId"])
+    if "positionId" in params:
+        query = query.filter(News.positionId == params["positionId"])
+    if "goodsId" in params:
+        query = query.filter(News.goodsId == params["goodsId"])
+    query = query.order_by(desc(Marks.id)).limit(limit).offset(skip).all()
     results = []
     for data in query:
         results.append({"objectId": data.id,
@@ -545,7 +563,7 @@ def query_news(session_token, skip, limit, params):
     if "goodsId" in params:
         query = query.filter(News.goodsId == params["goodsId"])
 
-    query = query.limit(limit).offset(skip).all()
+    query = query.order_by(desc(News.id)).limit(limit).offset(skip).all()
     results = []
     for data, user, space, position in query:
         if data.type == 4:
@@ -586,10 +604,11 @@ def read_news(session_token, news_id, is_mark):
     news = News.query.filter_by(id=news_id).first()
     if news is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss news'}}), 200
-    reads = Reads(belongUserId=user.id, newsId=news_id)
+    reads = Reads(belongUserId=user_id, newsId=news_id)
     reads.createdAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     reads.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     db.session.add(reads)
     db.session.commit()
     if is_mark == 1:
         create_marks(session_token=session_token, is_public=True, position_id=news.positionId, goods_id=news.goodsId)
+    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目修改成功"}})
