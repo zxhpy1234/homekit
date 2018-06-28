@@ -527,9 +527,9 @@ def query_news(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    sub_qry = db.session.query(func.count(Reads.id).label("read_flag")).filter(
-        Reads.newsId == News.id).filter(Reads.belongUserId == user_id).correlate(News).as_scalar()
-    query = db.session.query(News, User, Space, Position, sub_qry).filter(News.isDisable == 0) \
+    # sub_qry = db.session.query(func.count(Reads.id).label("read_flag")).filter(
+    #     Reads.newsId == News.id).filter(Reads.belongUserId == user_id).correlate(News).as_scalar()
+    query = db.session.query(News, User, Space, Position).filter(News.isDisable == 0) \
         .filter(News.belongUserId == User.id) \
         .filter(News.spaceId == Space.id) \
         .filter(News.positionId == Position.id) \
@@ -547,7 +547,7 @@ def query_news(session_token, skip, limit, params):
 
     query = query.limit(limit).offset(skip).all()
     results = []
-    for data, user, space, position, sub_qry in query:
+    for data, user, space, position in query:
         if data.type == 4:
             content = "# 共{}个物品 #".format(get_goods_num_in_position(data.positionId))
         else:
