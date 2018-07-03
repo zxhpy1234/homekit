@@ -23,10 +23,10 @@ def get_goods_num_in_space(space_id=-1):
 
 def get_members_num_in_space(space_id=-1):
     user_id_set = set()
-    space_user_ids = db.session.query(Position.belongUserId).filter(Position.spaceId == space_id).dinstinct().all()
+    space_user_ids = db.session.query(Position.belongUserId).filter(Position.spaceId == space_id).distinct().all()
     for user_id in space_user_ids:
         user_id_set.add(user_id)
-    goods_user_ids = db.session.query(Goods.belongUserId).filter(Goods.spaceId == space_id).dinstinct().all()
+    goods_user_ids = db.session.query(Goods.belongUserId).filter(Goods.spaceId == space_id).distinct().all()
     for user_id in goods_user_ids:
         user_id_set.add(user_id)
     return len(user_id_set)
@@ -39,7 +39,7 @@ def get_goods_num_in_position(position_id=-1):
 
 def get_members_num_in_position(position_id=-1):
     user_id_set = set()
-    goods_user_ids = db.session.query(Goods.belongUserId).filter(Goods.positionId == position_id).dinstinct().all()
+    goods_user_ids = db.session.query(Goods.belongUserId).filter(Goods.positionId == position_id).distinct().all()
     for user_id in goods_user_ids:
         user_id_set.add(user_id)
     return len(user_id_set)

@@ -15,8 +15,8 @@ from src.app.file import file
 from src.app.util import qiniucloudfile
 
 
-@file.route('/1.1/fileTokens', methods=['POST'])
-@file.route('/1.1/qiniu', methods=['POST'])
+@file.route('/fileTokens', methods=['POST'])
+@file.route('/qiniu', methods=['POST'])
 def qiniufileTokens():
     """
     TODO

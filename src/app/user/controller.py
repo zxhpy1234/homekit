@@ -107,8 +107,8 @@ def pack_users_me(user):
         del user_dict['password']
     del user_dict["_sa_instance_state"]
     del user_dict["checkCode"]
-    user_dict['updatedAt'] = util.get_mysql_datetime_from_iso(util.get_iso8601_from_dt(user_dict['updatedAt']))
-    user_dict['createdAt'] = util.get_mysql_datetime_from_iso(util.get_iso8601_from_dt(user_dict['createdAt']))
+    user_dict['updatedAt'] = util.get_iso8601_from_dt(user_dict['updatedAt'])
+    user_dict['createdAt'] = util.get_iso8601_from_dt(user_dict['createdAt'])
     print(user_dict)
     return jsonify(user_dict), 200
 

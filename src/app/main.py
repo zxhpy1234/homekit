@@ -5,7 +5,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 from src.app.config import SQLALCHEMY_DATABASE_URI
-from src.app.file import file
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(module)s.%(funcName)s Line:%(lineno)d %(message)s',
                     level=os.getenv("LOG_LEVEL", 'DEBUG'))
@@ -22,6 +21,7 @@ db = SQLAlchemy(app)
 from src.app.user import user
 from src.app.group import group
 from src.app.busi import busi
+from src.app.file import file
 
 app.register_blueprint(user, url_prefix=url_prefix)
 app.register_blueprint(file, url_prefix=url_prefix)

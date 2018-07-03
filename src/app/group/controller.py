@@ -60,17 +60,19 @@ def query_group(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss userk'}}), 200
-    query = db.session.query(Group).filter(GroupUser.userId == user_id).filter(
+    query = db.session.query(Group, User).filter(GroupUser.userId == user_id).filter(
         GroupUser.groupId == Group.id).filter(
+        Group.belongUserId == User.id).filter(
         GroupUser.isDisable == 0).filter(
         GroupUser.isAudit == 1).limit(limit).offset(skip).all()
     results = []
-    for group in query:
+    for group, user in query:
         results.append({"objectId": group.id,
                         "name": group.name,
                         "avatar": group.avatar,
                         "desc": group.desc,
                         "belongUserId": group.belongUserId,
+                        "belongUserName": user.firstName,
                         "isPublic": group.isPublic,
                         "createdAt": util.get_iso8601_from_dt(group.createdAt),
                         "updatedAt": util.get_iso8601_from_dt(group.updatedAt), })

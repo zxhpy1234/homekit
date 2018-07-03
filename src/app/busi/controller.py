@@ -63,9 +63,9 @@ def query_space(session_token, skip, limit, params):
                         "belongUserId": data.belongUserId,
                         "belongUserName": user.lastName,
                         "belongGroupId": data.belongGroupId,
-                        "positionNum": get_position_num_in_space(data.spaceId),
-                        "goodsNum": get_goods_num_in_space(data.spaceId),
-                        "membersNum": get_members_num_in_space(data.spaceId),
+                        "positionNum": get_position_num_in_space(data.id),
+                        "goodsNum": get_goods_num_in_space(data.id),
+                        "membersNum": get_members_num_in_space(data.id),
                         "isPublic": data.isPublic,
                         "createdAt": util.get_iso8601_from_dt(data.createdAt),
                         "updatedAt": util.get_iso8601_from_dt(data.updatedAt), })

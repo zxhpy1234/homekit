@@ -28,9 +28,9 @@ def create_space():
         return jsonify({"result": {"error_code": 1, "msg": 'miss name'}}), 200
     is_public = request.json.get('isPublic', None)
     avatar = request.json.get('avatar', "")
-    group_id = request.json.get('groupId', -1)
+    group_id = request.json.get('belongGroupId', -1)
     if group_id == -1:
-        return jsonify({"result": {"error_code": 1, "msg": 'miss groupId'}}), 200
+        return jsonify({"result": {"error_code": 1, "msg": 'miss belongGroupId'}}), 200
     return controller.create_space(session_token, name, is_public, avatar, group_id)
 
 
@@ -343,7 +343,7 @@ def _read_response(response):
     output = StringIO()
     try:
         for line in response.response:
-            output.write(line)
+            output.write(line.decode("utf8"))
         return output.getvalue()
 
     finally:
