@@ -149,7 +149,8 @@ def join_group(session_token, check_code):
     group = Group.query.filter_by(checkCode=check_code).first()
     if group is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss group'}}), 200
-    group_user = GroupUser.query.filter_by(userId=user_id, groupId=group.id).first()
+    group_user = GroupUser.query.filter_by(userId=user_id, groupId=group.id).filter(
+        GroupUser.isDisable == 0).first()
     if group_user:
         return jsonify({"result": {"error_code": 1, "msg": 'you have been joined'}}), 200
     else:

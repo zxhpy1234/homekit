@@ -144,12 +144,16 @@ def query_position(session_token, skip, limit, params):
     user_id = util.review_auth_token(APP_SECRET, session_token)
     user = User.query.filter_by(id=user_id).first()
     if user is None:
-        return jsonify({"result": {"error_code": 1, "msg": 'miss userk'}}), 200
-    query = db.session.query(Position, User, Space).filter(Position.belongGroupId == user.defaultGroupId) \
-        .filter(Position.spaceId == Space.id) \
-        .filter(Position.belongUserId == User.id).filter(
-        Position.isDisable == 0).limit(limit).offset(
-        skip).all()
+        return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
+    query = db.session.query(Position, User, Space) \
+        .filter(Position.spaceId == Space.id).filter(Position.belongUserId == User.id)
+    if params is None:
+        params = {}
+    if "belongGroupId" in params:
+        query = query.filter(Position.belongGroupId == params["belongGroupId"])
+    if "spaceId" in params:
+        query = query.filter(Position.spaceId == params["spaceId"])
+    query.filter(Position.isDisable == 0).limit(limit).offset(skip).all()
     results = []
     for data, user, space in query:
         results.append({"objectId": data.id,
@@ -246,9 +250,16 @@ def query_goods(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Goods).filter(Goods.belongGroupId == user.defaultGroupId).filter(
-        Goods.isDisable == 0).limit(limit).offset(
-        skip).all()
+    query = db.session.query(Goods).filter(Goods.belongGroupId == user.defaultGroupId).filter(Goods.isDisable == 0)
+    if params is None:
+        params = {}
+    if "belongGroupId" in params:
+        query = query.filter(Goods.belongGroupId == params["belongGroupId"])
+    if "spaceId" in params:
+        query = query.filter(Goods.spaceId == params["spaceId"])
+    if "positionId" in params:
+        query = query.filter(Goods.positionId == params["positionId"])
+    query = query.limit(limit).offset(skip).all()
     results = []
     for data in query:
         results.append({"objectId": data.id,
