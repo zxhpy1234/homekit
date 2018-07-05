@@ -270,6 +270,8 @@ def query_goods(session_token, skip, limit, params):
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
                         "isPublic": data.isPublic,
+                        "marksNum": get_marks_num_in_goods(data.id),
+                        "newsNum": get_news_num_in_goods(data.id),
                         "createdAt": util.get_iso8601_from_dt(data.createdAt),
                         "updatedAt": util.get_iso8601_from_dt(data.updatedAt), })
     return jsonify({"results": results})

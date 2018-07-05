@@ -8,7 +8,7 @@
 from sqlalchemy import func
 
 from src.app.main import db
-from src.app.models.model import Position, Goods
+from src.app.models.model import Position, Goods, Marks, News
 
 
 def get_position_num_in_space(space_id=-1):
@@ -43,3 +43,16 @@ def get_members_num_in_position(position_id=-1):
     for user_id in goods_user_ids:
         user_id_set.add(user_id)
     return len(user_id_set)
+
+
+def get_marks_num_in_goods(goods_id=-1):
+    user_id_set = set()
+    goods_user_ids = db.session.query(Marks.belongUserId).filter(Marks.goodsId == goods_id).distinct().all()
+    for user_id in goods_user_ids:
+        user_id_set.add(user_id)
+    return len(user_id_set)
+
+
+def get_news_num_in_goods(goods_id=-1):
+    return db.session.query(News).filter(News.goodsId == goods_id).filter(
+        News.isDisable == 0).with_entities(func.count(News.id)).scalar()
