@@ -274,7 +274,7 @@ def query_goods(session_token, skip, limit, params):
         query = query.filter(Goods.id == params["objectId"])
     query = query.limit(limit).offset(skip).all()
     results = []
-    for data in query:
+    for data, space in query:
         results.append({"objectId": data.id,
                         "name": data.name,
                         "avatar": data.avatar,
@@ -282,7 +282,7 @@ def query_goods(session_token, skip, limit, params):
                         "belongUserId": data.belongUserId,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
-                        "spaceName": data.spaceName,
+                        "spaceName": space.name,
                         "positionId": data.positionId,
                         "type": data.type,
                         "isPublic": data.isPublic,
@@ -466,7 +466,7 @@ def query_marks(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Marks, User).filter(Marks.belongUserId == user.id).filter(Marks.isDisable == 0)
+    query = db.session.query(Marks, User).filter(Marks.belongUserId == User.id).filter(Marks.isDisable == 0)
     if params is None:
         params = {}
     if "belongGroupId" in params:

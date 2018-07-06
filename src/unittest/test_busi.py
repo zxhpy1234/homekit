@@ -14,7 +14,7 @@ from leancloud import cloudfunc
 
 from src.unittest import LEANCLOUD_API_SERVER
 
-session_token = "eyJhbGciOiJIUzI1NiIsImlhdCI6MTUzMDA2NzEwNiwiZXhwIjoxNTMzNjY3MTA2fQ.IjIi.H4_kZHLlOEA7c_S_kxSGQ_JgSQAO4vqEx2Z86xz2hKM"
+session_token = "eyJhbGciOiJIUzI1NiIsImlhdCI6MTUzMDY4MjUxMSwiZXhwIjoxNTM0MjgyNTExfQ.IjQi.MG81MLUELCXuDbPfmqAzpEBzdXLu7dGlPywaa__-16E"
 
 
 class TestBusi(TestCase):
@@ -97,6 +97,7 @@ class TestBusi(TestCase):
         query = Model.query
         query.skip(0)
         query.limit(2)
+        query.equal_to("type", 2)
         todo_list = query.find()
         for todo in todo_list:
             print(todo.dump())
