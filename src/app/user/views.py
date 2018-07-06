@@ -93,8 +93,6 @@ def modify_user_info():
     if session_token == "" or session_token is None:
         return jsonify({'code': 1, 'msg': 'miss session_token'})
     password = request.json.get('password', "")
-    if password == "":
-        return jsonify({"result": {"error_code": 1, "msg": 'miss password'}}), 200
     first_name = request.json.get('firstName', "")
     last_name = request.json.get('lastName', "")
     email = request.json.get('email', "")

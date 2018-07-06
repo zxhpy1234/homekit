@@ -52,9 +52,16 @@ def query_space(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss userk'}}), 200
-    query = db.session.query(Space, User).filter(Space.belongGroupId == user.defaultGroupId) \
-        .filter(Space.belongUserId == User.id) \
-        .filter(Space.isDisable == 0).limit(limit).offset(skip).all()
+    query = db.session.query(Space, User).filter(Space.belongUserId == User.id).filter(
+        Space.belongGroupId == user.defaultGroupId) \
+        .filter(Space.isDisable == 0)
+    if params is None:
+        params = {}
+    if "belongGroupId" in params:
+        query = query.filter(Space.belongGroupId == params["belongGroupId"])
+    if "objectId" in params:
+        query = query.filter(Space.id == params["objectId"])
+    query = query.limit(limit).offset(skip).all()
     results = []
     for data, user in query:
         results.append({"objectId": data.id,
@@ -153,7 +160,9 @@ def query_position(session_token, skip, limit, params):
         query = query.filter(Position.belongGroupId == params["belongGroupId"])
     if "spaceId" in params:
         query = query.filter(Position.spaceId == params["spaceId"])
-    query.filter(Position.isDisable == 0).limit(limit).offset(skip).all()
+    if "objectId" in params:
+        query = query.filter(Position.id == params["objectId"])
+    query = query.filter(Position.isDisable == 0).limit(limit).offset(skip).all()
     results = []
     for data, user, space in query:
         results.append({"objectId": data.id,
@@ -207,7 +216,7 @@ def update_position(session_token, todo_id, name, is_public, avatar, coordinate,
     return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目修改成功"}})
 
 
-def create_goods(session_token, name, is_public, avatar, coordinate, position_id):
+def create_goods(session_token, name, is_public, avatar, coordinate, position_id, type):
     """
     创建组，并创建一条关联记录
     :param position_id:
@@ -227,7 +236,7 @@ def create_goods(session_token, name, is_public, avatar, coordinate, position_id
         return jsonify({"result": {"error_code": 1, "msg": 'miss position'}}), 200
     goods = Goods(name=name, avatar=avatar, coordinate=coordinate, belongUserId=user_id,
                   belongGroupId=position.belongGroupId, isPublic=is_public, spaceId=position.spaceId,
-                  positionId=position_id)
+                  positionId=position_id, type=type)
     goods.createdAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     goods.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     db.session.add(goods)
@@ -250,7 +259,7 @@ def query_goods(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Goods).filter(Goods.belongGroupId == user.defaultGroupId).filter(Goods.isDisable == 0)
+    query = db.session.query(Goods, Space).filter(Goods.spaceId == Space.id).filter(Goods.isDisable == 0)
     if params is None:
         params = {}
     if "belongGroupId" in params:
@@ -259,6 +268,10 @@ def query_goods(session_token, skip, limit, params):
         query = query.filter(Goods.spaceId == params["spaceId"])
     if "positionId" in params:
         query = query.filter(Goods.positionId == params["positionId"])
+    if "type" in params:
+        query = query.filter(Goods.type == params["type"])
+    if "objectId" in params:
+        query = query.filter(Goods.id == params["objectId"])
     query = query.limit(limit).offset(skip).all()
     results = []
     for data in query:
@@ -269,6 +282,9 @@ def query_goods(session_token, skip, limit, params):
                         "belongUserId": data.belongUserId,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
+                        "spaceName": data.spaceName,
+                        "positionId": data.positionId,
+                        "type": data.type,
                         "isPublic": data.isPublic,
                         "marksNum": get_marks_num_in_goods(data.id),
                         "newsNum": get_news_num_in_goods(data.id),
@@ -363,6 +379,8 @@ def query_notes(session_token, skip, limit, params):
         query = query.filter(News.positionId == params["positionId"])
     if "goodsId" in params:
         query = query.filter(News.goodsId == params["goodsId"])
+    if "objectId" in params:
+        query = query.filter(News.id == params["objectId"])
     query = query.order_by(desc(Notes.id)).limit(limit).offset(skip).all()
     results = []
     for data in query:
@@ -452,13 +470,15 @@ def query_marks(session_token, skip, limit, params):
     if params is None:
         params = {}
     if "belongGroupId" in params:
-        query = query.filter(News.belongGroupId == params["belongGroupId"])
+        query = query.filter(Marks.belongGroupId == params["belongGroupId"])
     if "spaceId" in params:
-        query = query.filter(News.spaceId == params["spaceId"])
+        query = query.filter(Marks.spaceId == params["spaceId"])
     if "positionId" in params:
-        query = query.filter(News.positionId == params["positionId"])
+        query = query.filter(Marks.positionId == params["positionId"])
     if "goodsId" in params:
-        query = query.filter(News.goodsId == params["goodsId"])
+        query = query.filter(Marks.goodsId == params["goodsId"])
+    if "objectId" in params:
+        query = query.filter(Marks.id == params["objectId"])
     query = query.order_by(desc(Marks.id)).limit(limit).offset(skip).all()
     results = []
     for data in query:
@@ -575,6 +595,10 @@ def query_news(session_token, skip, limit, params):
         query = query.filter(News.positionId == params["positionId"])
     if "goodsId" in params:
         query = query.filter(News.goodsId == params["goodsId"])
+    if "type" in params:
+        query = query.filter(News.type == params["type"])
+    if "objectId" in params:
+        query = query.filter(News.id == params["objectId"])
 
     query = query.order_by(desc(News.id)).limit(limit).offset(skip).all()
     results = []

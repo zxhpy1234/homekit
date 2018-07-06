@@ -117,6 +117,7 @@ class Goods(db.Model):
     belongGroupId = db.Column(db.Integer, nullable=True)
     spaceId = db.Column(db.Integer, nullable=True)
     positionId = db.Column(db.Integer, nullable=True)
+    type = db.Column(db.SmallInteger, default=0, nullable=False)
     isPublic = db.Column(db.SmallInteger, default=0, nullable=False)
     coordinate = db.Column(db.String(256), nullable=True)
     isDisable = db.Column(db.SmallInteger, default=0, nullable=False)

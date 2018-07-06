@@ -134,9 +134,10 @@ def create_goods():
     avatar = request.json.get('avatar', "")
     coordinate = request.json.get('coordinate', "")
     position_id = request.json.get('positionId', "")
+    type = request.json.get('type', 1)
     if position_id == -1:
         return jsonify({"result": {"error_code": 1, "msg": 'miss positionId'}}), 200
-    return controller.create_goods(session_token, name, is_public, avatar, coordinate, position_id)
+    return controller.create_goods(session_token, name, is_public, avatar, coordinate, position_id, type)
 
 
 @busi.route('/classes/Goods', methods=['GET', ])
