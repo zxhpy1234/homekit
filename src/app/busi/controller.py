@@ -259,7 +259,7 @@ def query_goods(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Goods, Space).filter(Goods.spaceId == Space.id)
+    query = db.session.query(Goods, Space, User).filter(Goods.spaceId == Space.id).filter(Goods.belongUserId == User.id)
     if params is None:
         params = {}
     if "belongGroupId" in params:
@@ -278,12 +278,13 @@ def query_goods(session_token, skip, limit, params):
         query = query.filter(Goods.isDisable == 0)
     query = query.limit(limit).offset(skip).all()
     results = []
-    for data, space in query:
+    for data, space, user in query:
         results.append({"objectId": data.id,
                         "name": data.name,
                         "avatar": data.avatar,
                         "coordinate": data.coordinate,
                         "belongUserId": data.belongUserId,
+                        "belongUserName": user.firstName,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
                         "spaceName": space.name,
