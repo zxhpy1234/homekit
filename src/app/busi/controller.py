@@ -259,7 +259,7 @@ def query_goods(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Goods, Space).filter(Goods.spaceId == Space.id).filter(Goods.isDisable == 0)
+    query = db.session.query(Goods, Space).filter(Goods.spaceId == Space.id)
     if params is None:
         params = {}
     if "belongGroupId" in params:
@@ -272,6 +272,10 @@ def query_goods(session_token, skip, limit, params):
         query = query.filter(Goods.type == params["type"])
     if "objectId" in params:
         query = query.filter(Goods.id == params["objectId"])
+    if "isDisable" in params:
+        query = query.filter(Goods.id == params["isDisable"])
+    else:
+        query = query.filter(Goods.isDisable == 0)
     query = query.limit(limit).offset(skip).all()
     results = []
     for data, space in query:
@@ -385,7 +389,7 @@ def query_notes(session_token, skip, limit, params):
     results = []
     for data in query:
         results.append({"objectId": data.id,
-                        "name": data.note,
+                        "note": data.note,
                         "belongUserId": data.belongUserId,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
