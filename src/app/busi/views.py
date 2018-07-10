@@ -349,3 +349,12 @@ def _read_response(response):
 
     finally:
         output.close()
+
+
+@busi.route('/classes/Helps', methods=['GET', ])
+def query_helps():
+    """
+    查询组
+    :return:
+    """
+    return jsonify({"results": [{"url": "https://sundries.gitbook.io/help/"}]})
