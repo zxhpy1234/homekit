@@ -7,7 +7,7 @@
 # @Software: PyCharm
 
 from flask import jsonify
-from sqlalchemy import exists, not_, and_, desc
+from sqlalchemy import exists, not_, and_, desc, or_
 
 from src.app.group.modes import *
 from src.app.main import db
@@ -61,6 +61,13 @@ def query_space(session_token, skip, limit, params):
         query = query.filter(Space.belongGroupId == params["belongGroupId"])
     if "objectId" in params:
         query = query.filter(Space.id == params["objectId"])
+    # 私密性
+    query = query.filter(or_(
+        Space.isPublic == 1, and_(
+            Space.isPublic == 0,
+            Space.belongUserId == user_id)
+    ))
+
     query = query.limit(limit).offset(skip).all()
     results = []
     for data, user in query:
@@ -162,6 +169,12 @@ def query_position(session_token, skip, limit, params):
         query = query.filter(Position.spaceId == params["spaceId"])
     if "objectId" in params:
         query = query.filter(Position.id == params["objectId"])
+    # 私密性
+    query = query.filter(or_(
+        Position.isPublic == 1, and_(
+            Position.isPublic == 0,
+            Position.belongUserId == user_id)
+    ))
     query = query.filter(Position.isDisable == 0).limit(limit).offset(skip).all()
     results = []
     for data, user, space in query:
@@ -273,9 +286,15 @@ def query_goods(session_token, skip, limit, params):
     if "objectId" in params:
         query = query.filter(Goods.id == params["objectId"])
     if "isDisable" in params:
-        query = query.filter(Goods.id == params["isDisable"])
+        query = query.filter(Goods.isDisable == params["isDisable"])
     else:
         query = query.filter(Goods.isDisable == 0)
+    # 私密性
+    query = query.filter(or_(
+        Goods.isPublic == 1, and_(
+            Goods.isPublic == 0,
+            Goods.belongUserId == user_id)
+    ))
     query = query.limit(limit).offset(skip).all()
     results = []
     for data, space, user in query:
@@ -446,7 +465,10 @@ def create_marks(session_token, is_public, position_id, goods_id):
     position = Position.query.filter_by(id=position_id).first()
     if position is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss position'}}), 200
-    marks = Marks(belongUserId=user_id, belongGroupId=user_id, spaceId=position.spaceId,
+    marks = Marks.query.filter_by(belongUserId=user_id, goodsId=goods_id).first()
+    if marks is not None:
+        return jsonify({"result": {"error_code": 1, "msg": '已经标注过了呢'}}), 200
+    marks = Marks(belongUserId=user_id, belongGroupId=user.defaultGroupId, spaceId=position.spaceId,
                   positionId=position_id, goodsId=goods_id, isPublic=is_public)
     marks.createdAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     marks.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
