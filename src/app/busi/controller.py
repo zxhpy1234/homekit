@@ -310,6 +310,7 @@ def query_goods(session_token, skip, limit, params):
                         "positionId": data.positionId,
                         "type": data.type,
                         "isPublic": data.isPublic,
+                        "note": get_latest_note_in_goods(data.id),
                         "marksNum": get_marks_num_in_goods(data.id),
                         "newsNum": get_news_num_in_goods(data.id),
                         "createdAt": util.get_iso8601_from_dt(data.createdAt),

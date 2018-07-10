@@ -5,10 +5,10 @@
 # @Site    : 
 # @File    : modes.py
 # @Software: PyCharm
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
 from src.app.main import db
-from src.app.models.model import Position, Goods, Marks, News
+from src.app.models.model import Position, Goods, Marks, News, Notes
 
 
 def get_position_num_in_space(space_id=-1):
@@ -56,3 +56,11 @@ def get_marks_num_in_goods(goods_id=-1):
 def get_news_num_in_goods(goods_id=-1):
     return db.session.query(News).filter(News.goodsId == goods_id).filter(
         News.isDisable == 0).with_entities(func.count(News.id)).scalar()
+
+
+def get_latest_note_in_goods(goods_id=-1):
+    notes = db.session.query(Notes.note).filter(Notes.goodsId == goods_id).order_by(desc(Notes.id)).first()
+    if notes:
+        return notes.note
+    else:
+        return ""
