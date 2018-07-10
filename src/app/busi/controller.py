@@ -313,9 +313,9 @@ def update_goods(session_token, todo_id, name, is_public, avatar, desc, is_disab
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    goods = Goods.query.filter_by(id=todo_id, belongUserId=user_id).first()
+    goods = Goods.query.filter_by(id=todo_id).first()
     if goods is None:
-        return jsonify({"result": {"error_code": 1, "msg": 'miss position'}}), 200
+        return jsonify({"result": {"error_code": 1, "msg": 'miss goods'}}), 200
     if name != "":
         goods.name = name
     if is_public is not None:
