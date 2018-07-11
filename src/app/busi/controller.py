@@ -36,7 +36,7 @@ def create_space(session_token, name, is_public, avatar, group_id):
     space.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     db.session.add(space)
     db.session.commit()
-    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "空间创建成功"}})
+    return jsonify({"objectId": space.id})
 
 
 def query_space(session_token, skip, limit, params):
@@ -143,7 +143,7 @@ def create_position(session_token, name, is_public, avatar, space_id, coordinate
     db.session.commit()
     save_news(user, title="", content="", type=4, space_id=position.spaceId, position_id=position.id,
               goods_id=-1)
-    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "位置创建成功"}})
+    return jsonify({"objectId": position.id})
 
 
 def query_position(session_token, skip, limit, params):
@@ -256,7 +256,7 @@ def create_goods(session_token, name, is_public, avatar, coordinate, position_id
     db.session.commit()
     save_news(user, title="", content="", type=1, space_id=goods.spaceId, position_id=goods.positionId,
               goods_id=goods.id)
-    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目创建成功"}})
+    return jsonify({"objectId": goods.id})
 
 
 def query_goods(session_token, skip, limit, params):
@@ -272,7 +272,9 @@ def query_goods(session_token, skip, limit, params):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
-    query = db.session.query(Goods, Space, User).filter(Goods.spaceId == Space.id).filter(Goods.belongUserId == User.id)
+    query = db.session.query(Goods, Space, User, Position).filter(Goods.spaceId == Space.id) \
+        .filter(Goods.belongUserId == User.id) \
+        .filter(Goods.positionId == Position.id)
     if params is None:
         params = {}
     if "belongGroupId" in params:
@@ -295,19 +297,20 @@ def query_goods(session_token, skip, limit, params):
             Goods.isPublic == 0,
             Goods.belongUserId == user_id)
     ))
-    query = query.limit(limit).offset(skip).all()
+    query = query.order_by(desc(Goods.id)).limit(limit).offset(skip).all()
     results = []
-    for data, space, user in query:
+    for data, space, user, position in query:
         results.append({"objectId": data.id,
                         "name": data.name,
                         "avatar": data.avatar,
                         "coordinate": data.coordinate,
                         "belongUserId": data.belongUserId,
-                        "belongUserName": user.firstName,
+                        "belongUserName": user.lastName + user.firstName,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
                         "spaceName": space.name,
                         "positionId": data.positionId,
+                        "positionName": position.name,
                         "type": data.type,
                         "isPublic": data.isPublic,
                         "note": get_latest_note_in_goods(data.id),
@@ -369,15 +372,15 @@ def create_notes(session_token, note, is_public, goods_id):
     goods = Goods.query.filter_by(id=goods_id).first()
     if goods is None:
         return jsonify({"result": {"error_code": 1, "msg": 'miss position'}}), 200
-    group = Notes(note=note, belongUserId=user_id, belongGroupId=user.defaultGroupId, spaceId=goods.spaceId,
+    notes = Notes(note=note, belongUserId=user_id, belongGroupId=user.defaultGroupId, spaceId=goods.spaceId,
                   positionId=goods.positionId, goodsId=goods_id, isPublic=is_public)
-    group.createdAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
-    group.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
-    db.session.add(group)
+    notes.createdAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
+    notes.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
+    db.session.add(notes)
     db.session.commit()
     save_news(user, title="", content=note, type=3, space_id=goods.spaceId, position_id=goods.positionId,
               goods_id=goods_id)
-    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目创建成功"}})
+    return jsonify({"objectId": notes.id})
 
 
 def query_notes(session_token, skip, limit, params):
@@ -397,15 +400,15 @@ def query_notes(session_token, skip, limit, params):
     if params is None:
         params = {}
     if "belongGroupId" in params:
-        query = query.filter(News.belongGroupId == params["belongGroupId"])
+        query = query.filter(Notes.belongGroupId == params["belongGroupId"])
     if "spaceId" in params:
-        query = query.filter(News.spaceId == params["spaceId"])
+        query = query.filter(Notes.spaceId == params["spaceId"])
     if "positionId" in params:
-        query = query.filter(News.positionId == params["positionId"])
+        query = query.filter(Notes.positionId == params["positionId"])
     if "goodsId" in params:
-        query = query.filter(News.goodsId == params["goodsId"])
+        query = query.filter(Notes.goodsId == params["goodsId"])
     if "objectId" in params:
-        query = query.filter(News.id == params["objectId"])
+        query = query.filter(Notes.id == params["objectId"])
     query = query.order_by(desc(Notes.id)).limit(limit).offset(skip).all()
     results = []
     for data in query:
@@ -478,7 +481,7 @@ def create_marks(session_token, is_public, position_id, goods_id):
     if goods_id != -1 and goods_id is not None:
         save_news(user, title="", content="", type=2, space_id=position.spaceId, position_id=position_id,
                   goods_id=goods_id)
-    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目创建成功"}})
+    return jsonify({"objectId": marks.id})
 
 
 def query_marks(session_token, skip, limit, params):
@@ -512,7 +515,7 @@ def query_marks(session_token, skip, limit, params):
     for data, user in query:
         results.append({"objectId": data.id,
                         "belongUserId": data.belongUserId,
-                        "belongUserName": user.firstName,
+                        "belongUserName": user.lastName + user.firstName,
                         "avatar": user.avatar,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
@@ -575,16 +578,16 @@ def save_news(user, title="", content="", type=1, space_id=-1, position_id=-1, g
         return jsonify({"result": {"error_code": 1, "msg": 'miss goods'}}), 200
     avatar = ""
     if type == 1:
-        title = "{} 在 #{}/{} 添加了{}".format(user.firstName, space.name, position.name, goods.name)
+        title = "{} 在 #{}/{} 添加了{}".format(user.lastName + user.firstName, space.name, position.name, goods.name)
         avatar = goods.avatar
     elif type == 2:
-        title = "{} 标记了{}".format(user.firstName, goods.name)
+        title = "{} 标记了{}".format(user.lastName + user.firstName, goods.name)
         avatar = goods.avatar
     elif type == 3:
-        title = "{} 添加了备注".format(user.firstName)
+        title = "{} 添加了备注".format(user.lastName + user.firstName)
         avatar = goods.avatar
     elif type == 4:
-        title = "{} 在 #{} 添加了{}".format(user.firstName, space.name, position.name)
+        title = "{} 在 #{} 添加了{}".format(user.lastName + user.firstName, space.name, position.name)
         avatar = space.avatar
     news = News(title=title, content=content, type=type, belongUserId=user.id,
                 belongGroupId=space.belongGroupId, spaceId=space_id,
@@ -614,6 +617,8 @@ def query_news(session_token, skip, limit, params):
         .filter(News.belongUserId == User.id) \
         .filter(News.spaceId == Space.id) \
         .filter(News.positionId == Position.id) \
+        .filter(News.goodsId == Goods.id) \
+        .filter(Goods.isDisable == 0) \
         .filter(not_(exists().where(and_(News.id == Reads.newsId, Reads.belongUserId == user_id))))
     if params is None:
         params = {}
@@ -643,7 +648,7 @@ def query_news(session_token, skip, limit, params):
                         "type": data.type,
                         "avatar": data.avatar,
                         "belongUserId": data.belongGroupId,
-                        "belongUserName": user.firstName,
+                        "belongUserName": user.lastName + user.firstName,
                         "belongGroupId": data.belongGroupId,
                         "spaceId": data.spaceId,
                         "spaceName": space.name,

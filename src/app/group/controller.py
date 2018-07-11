@@ -42,7 +42,7 @@ def create_group(session_token, name, is_public, avatar, desc, return_type="json
     db.session.add(group_user)
     db.session.commit()
     if return_type == "jsonify":
-        return jsonify({"result": {"data": {"groupId": group.id}, "error_code": 0, "msg": "项目创建成功"}})
+        return jsonify({"objectId": group.id})
     else:
         return {"result": {"data": {"groupId": group.id}, "error_code": 0, "msg": "项目创建成功"}}
 
@@ -72,7 +72,7 @@ def query_group(session_token, skip, limit, params):
                         "avatar": group.avatar,
                         "desc": group.desc,
                         "belongUserId": group.belongUserId,
-                        "belongUserName": user.firstName,
+                        "belongUserName": user.lastName + user.firstName,
                         "isPublic": group.isPublic,
                         "createdAt": util.get_iso8601_from_dt(group.createdAt),
                         "updatedAt": util.get_iso8601_from_dt(group.updatedAt), })
@@ -186,7 +186,7 @@ def query_group_user(session_token, skip, limit, params):
     results = []
     for user, group_user in query:
         results.append({"objectId": group_user.id,
-                        "name": user.firstName,
+                        "name": user.lastName + user.firstName,
                         "avatar": user.avatar,
                         "userId": group_user.userId,
                         "groupId": group_user.groupId,

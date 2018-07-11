@@ -87,9 +87,11 @@ class TestBusi(TestCase):
         obj.set("name", "鞋柜2")
         obj.set("isPublic", 1)
         obj.set("avatar", "http://www.baidu.com")
-        obj.set("coordinate", "coordinatecoordinatecoordinate")
+        obj.set("coordinate", "")
         obj.set("positionId", 2)
+        obj.set("type", 1)
         obj.save()
+        print(obj.dump())
 
     def test_query_goods(self):
         user = leancloud.User().become(session_token)
