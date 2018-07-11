@@ -91,6 +91,7 @@ class TestBusi(TestCase):
         obj.set("positionId", 2)
         obj.set("type", 1)
         obj.save()
+
         print(obj.dump())
 
     def test_query_goods(self):
