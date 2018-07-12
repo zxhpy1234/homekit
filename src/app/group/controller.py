@@ -42,7 +42,7 @@ def create_group(session_token, name, is_public, avatar, desc, return_type="json
     db.session.add(group_user)
     db.session.commit()
     if return_type == "jsonify":
-        return jsonify({"objectId": group.id})
+        return jsonify({"objectId": str(group.id)})
     else:
         return {"result": {"data": {"groupId": group.id}, "error_code": 0, "msg": "项目创建成功"}}
 

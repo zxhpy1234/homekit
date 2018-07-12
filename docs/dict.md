@@ -14,6 +14,7 @@
 
 ###云函数目录
 - sendCodeByEmail	 发送验证码邮件
+- queryEmail    查询邮箱是否已存在
 - register	注册
 - resetPassword	重置密码
 - modifyUserInfo	修改用户信息
@@ -226,7 +227,24 @@ sendCodeByEmail
 ####数据示例
     {"result": {"error_code": 0, "msg": 'succ'}}
     
-    
+
+----------
+###查询邮箱帐号是否存在
+####方法名称
+queryEmail
+####描述
+查询邮箱帐号是否存在
+####输入说明
+|----|----|
+|名称|类型|说明|缺省|
+|username |string|帐号名| 无|
+
+####输出说明
+无，判断调用是否成功即可，如错误进行提示
+
+####数据示例
+    {"result": {"error_code": 0, "msg": 'succ'}}
+
 ----------
 ###注册接口
 ####方法名称

@@ -23,6 +23,17 @@ def send_code_by_email():
     return controller.send_code_by_email(username=username)
 
 
+@user.route('/functions/queryEmail', methods=['POST', ])
+def query_email():
+    """
+    :return:
+    """
+    username = request.json.get('username', "")
+    if username == "":
+        return jsonify({"result": {"error_code": 1, "msg": 'miss username'}}), 200
+    return controller.query_email(username=username)
+
+
 @user.route('/functions/register', methods=['POST', ])
 def register():
     """

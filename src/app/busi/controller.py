@@ -36,7 +36,7 @@ def create_space(session_token, name, is_public, avatar, group_id):
     space.updatedAt = util.get_mysql_datetime_from_iso(util.get_iso8601())
     db.session.add(space)
     db.session.commit()
-    return jsonify({"objectId": space.id})
+    return jsonify({"objectId": str(space.id)})
 
 
 def query_space(session_token, skip, limit, params):
@@ -143,7 +143,7 @@ def create_position(session_token, name, is_public, avatar, space_id, coordinate
     db.session.commit()
     save_news(user, title="", content="", type=4, space_id=position.spaceId, position_id=position.id,
               goods_id=-1)
-    return jsonify({"objectId": position.id})
+    return jsonify({"objectId": str(position.id)})
 
 
 def query_position(session_token, skip, limit, params):
@@ -229,9 +229,11 @@ def update_position(session_token, todo_id, name, is_public, avatar, coordinate,
     return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目修改成功"}})
 
 
-def create_goods(session_token, name, is_public, avatar, coordinate, position_id, type):
+def create_goods(session_token, name, is_public, avatar, coordinate, position_id, type, internal_id=""):
     """
     创建组，并创建一条关联记录
+    :param internal_id:
+    :param type:
     :param position_id:
     :param coordinate:
     :param avatar:
@@ -256,7 +258,7 @@ def create_goods(session_token, name, is_public, avatar, coordinate, position_id
     db.session.commit()
     save_news(user, title="", content="", type=1, space_id=goods.spaceId, position_id=goods.positionId,
               goods_id=goods.id)
-    return jsonify({"objectId": goods.id})
+    return jsonify({"objectId": str(goods.id), "__internalId": internal_id})
 
 
 def query_goods(session_token, skip, limit, params):
@@ -380,7 +382,7 @@ def create_notes(session_token, note, is_public, goods_id):
     db.session.commit()
     save_news(user, title="", content=note, type=3, space_id=goods.spaceId, position_id=goods.positionId,
               goods_id=goods_id)
-    return jsonify({"objectId": notes.id})
+    return jsonify({"objectId": str(notes.id)})
 
 
 def query_notes(session_token, skip, limit, params):
@@ -481,7 +483,7 @@ def create_marks(session_token, is_public, position_id, goods_id):
     if goods_id != -1 and goods_id is not None:
         save_news(user, title="", content="", type=2, space_id=position.spaceId, position_id=position_id,
                   goods_id=goods_id)
-    return jsonify({"objectId": marks.id})
+    return jsonify({"objectId": str(marks.id)})
 
 
 def query_marks(session_token, skip, limit, params):

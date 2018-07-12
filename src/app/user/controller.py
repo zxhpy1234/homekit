@@ -36,6 +36,18 @@ def send_code_by_email(username=""):
     return jsonify({"result": {"data": {}, "error_code": 0, "msg": "邮件发送成功"}})
 
 
+def query_email(username=""):
+    """
+    1.查找用户表指定用户
+    :param username:
+    :return:
+    """
+    user = User.query.filter_by(username=username).first()
+    if user is not None:
+        return jsonify({"result": {"error_code": 1, "msg": '邮箱已存在'}}), 200
+    return jsonify({"result": {"data": {}, "error_code": 0, "msg": "邮箱不存在"}})
+
+
 def register(first_name="", last_name="", username="", email="", check_code="", password="", avatar="", ):
     """
     注册接口
