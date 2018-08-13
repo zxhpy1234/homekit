@@ -686,3 +686,109 @@ def read_news(session_token, news_id, is_mark):
     if is_mark == 1:
         create_marks(session_token=session_token, is_public=True, position_id=news.positionId, goods_id=news.goodsId)
     return jsonify({"result": {"data": {}, "error_code": 0, "msg": "项目修改成功"}})
+
+
+def fix_search(session_token, keyword, belong_group_id):
+    """
+    混合查询，
+    :param belong_group_id:
+    :param keyword:
+    :param session_token:
+    :return:
+    """
+    user_id = util.review_auth_token(APP_SECRET, session_token)
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return jsonify({"result": {"error_code": 1, "msg": 'miss user'}}), 200
+    # 查询空间数据
+    query = db.session.query(Space, User).filter(Space.belongUserId == User.id).filter(
+        Space.belongGroupId == user.defaultGroupId) \
+        .filter(Space.isDisable == 0)
+    query = query.filter(Space.belongGroupId == belong_group_id).filter(Space.name.like(f"%{keyword}%"))
+    # 私密性
+    query = query.filter(or_(
+        Space.isPublic == 1, and_(
+            Space.isPublic == 0,
+            Space.belongUserId == user_id)
+    ))
+
+    query = query.all()
+    space_results = []
+    for data, user in query:
+        space_results.append({"objectId": data.id,
+                              "name": data.name,
+                              "avatar": data.avatar,
+                              "belongUserId": data.belongUserId,
+                              "belongUserName": user.lastName,
+                              "belongGroupId": data.belongGroupId,
+                              "positionNum": get_position_num_in_space(data.id),
+                              "goodsNum": get_goods_num_in_space(data.id),
+                              "membersNum": get_members_num_in_space(data.id),
+                              "isPublic": data.isPublic,
+                              "createdAt": util.get_iso8601_from_dt(data.createdAt),
+                              "updatedAt": util.get_iso8601_from_dt(data.updatedAt), })
+
+    # 查询位置数据
+    query = db.session.query(Position, User, Space) \
+        .filter(Position.spaceId == Space.id).filter(Position.belongUserId == User.id)
+    query = query.filter(Space.belongGroupId == belong_group_id).filter(Position.name.like(f"%{keyword}%"))
+    # 私密性
+    query = query.filter(or_(
+        Position.isPublic == 1, and_(
+            Position.isPublic == 0,
+            Position.belongUserId == user_id)
+    ))
+    query = query.filter(Position.isDisable == 0).all()
+    position_results = []
+    for data, user, space in query:
+        position_results.append({"objectId": data.id,
+                                 "name": data.name,
+                                 "avatar": data.avatar,
+                                 "coordinate": data.coordinate,
+                                 "belongUserId": data.belongUserId,
+                                 "belongGroupId": data.belongGroupId,
+                                 "spaceId": data.spaceId,
+                                 "belongUserName": user.lastName,
+                                 "spaceName": space.name,
+                                 "goodsNum": get_goods_num_in_position(data.spaceId),
+                                 "membersNum": get_members_num_in_position(data.spaceId),
+                                 "isPublic": data.isPublic,
+                                 "createdAt": util.get_iso8601_from_dt(data.createdAt),
+                                 "updatedAt": util.get_iso8601_from_dt(data.updatedAt), })
+
+    query = db.session.query(Goods, Space, User, Position).filter(Goods.spaceId == Space.id) \
+        .filter(Goods.belongUserId == User.id) \
+        .filter(Goods.positionId == Position.id)
+    query = query.filter(Space.belongGroupId == belong_group_id).filter(Goods.name.like(f"%{keyword}%"))
+    query = query.filter(Goods.isDisable == 0)
+    # 私密性
+    query = query.filter(or_(
+        Goods.isPublic == 1, and_(
+            Goods.isPublic == 0,
+            Goods.belongUserId == user_id)
+    ))
+    query = query.order_by(desc(Goods.id)).all()
+    goods_results = []
+    for data, space, user, position in query:
+        goods_results.append({"objectId": data.id,
+                              "name": data.name,
+                              "avatar": data.avatar,
+                              "coordinate": data.coordinate,
+                              "belongUserId": data.belongUserId,
+                              "belongUserName": user.lastName + user.firstName,
+                              "belongGroupId": data.belongGroupId,
+                              "spaceId": data.spaceId,
+                              "spaceName": space.name,
+                              "positionId": data.positionId,
+                              "positionName": position.name,
+                              "type": data.type,
+                              "isPublic": data.isPublic,
+                              "note": get_latest_note_in_goods(data.id),
+                              "marksNum": get_marks_num_in_goods(data.id),
+                              "newsNum": get_news_num_in_goods(data.id),
+                              "createdAt": util.get_iso8601_from_dt(data.createdAt),
+                              "updatedAt": util.get_iso8601_from_dt(data.updatedAt), })
+
+    return jsonify({"result": {
+        "data": {"space_results": space_results, "position_results": position_results, "goods_results": goods_results},
+        "error_code": 0, "msg": "查询成功"}})

@@ -178,3 +178,17 @@ class TestBusi(TestCase):
         ret = cloudfunc.run('readNews', isMark=1, newsId=1)
         print(ret)
         assert (type(ret) == dict)
+
+    def test_join_group(self):
+        user = leancloud.User().become(
+            "eyJhbGciOiJIUzI1NiIsImlhdCI6MTUyOTkxNTQyMywiZXhwIjoxNTMzNTE1NDIzfQ.IjQi.ttcDTMSAszLP7F3TJieiCCzYV6j0o0D8pMFgnMkGCwI")
+        ret = cloudfunc.run('search', keyword="4675")
+        print(ret)
+        assert (type(ret) == dict)
+
+    def test_fix_search(self):
+        user = leancloud.User().become(
+            "eyJhbGciOiJIUzI1NiIsImlhdCI6MTUyOTkxNTQyMywiZXhwIjoxNTMzNTE1NDIzfQ.IjQi.ttcDTMSAszLP7F3TJieiCCzYV6j0o0D8pMFgnMkGCwI")
+        ret = cloudfunc.run('search', keyword="测", belongGroupId="8")
+        print(ret)
+        assert (type(ret) == dict)

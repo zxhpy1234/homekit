@@ -414,3 +414,21 @@ def query_helps():
     :return:
     """
     return jsonify({"results": [{"url": "https://sundries.gitbook.io/help/"}]})
+
+
+@busi.route('/functions/search', methods=['POST', ])
+def fix_search():
+    """
+    混合查询
+    :return:
+    """
+    session_token = request.headers.get('X-LC-Session', "")
+    if session_token == "" or session_token is None:
+        return jsonify({"result": {"error_code": 1, "msg": 'miss session_token'}}), 200
+    keyword = request.json.get('keyword', "")
+    if keyword == "":
+        return jsonify({"result": {"error_code": 1, "msg": 'miss keyword'}}), 200
+    belong_group_id = request.json.get('belongGroupId', "")
+    if belong_group_id == "":
+        return jsonify({"result": {"error_code": 1, "msg": 'miss belongGroupId'}}), 200
+    return controller.fix_search(session_token, keyword, belong_group_id)
